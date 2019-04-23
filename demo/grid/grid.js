@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     from: { namespace: 'grid' },
     leave({ current, trigger }) {
       if (typeof trigger === 'string') {
+        console.info(barba.history.current, barba.history.previous);
         return;
       }
 
@@ -26,7 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const shrinkTransition = {
     from: { namespace: 'detail' },
-    sync: true,
     enter({ current, next }) {
       current.container.style.zIndex = '10';
 
