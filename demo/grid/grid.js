@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
     from: { namespace: 'grid' },
     leave({ current, trigger }) {
       if (typeof trigger === 'string') {
-        console.info(barba.history.current, barba.history.previous);
         return;
       }
 
@@ -36,7 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const destThumbPosition = destThumb.getBoundingClientRect();
       const fullImage = current.container.querySelector('.full');
 
-      TweenLite.to(current.container.querySelector('.back'), 0.2, { opacity: 0 });
+      TweenLite.to(current.container.querySelector('.back'), 0.2, {
+        opacity: 0,
+      });
       TweenLite.to(fullImage, 0.3, {
         top: destThumbPosition.top,
         height: destThumb.clientHeight,
@@ -46,9 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   barba.init({
-    transitions: [
-      expandTransition,
-      shrinkTransition,
-    ],
+    transitions: [expandTransition, shrinkTransition],
   });
 });
