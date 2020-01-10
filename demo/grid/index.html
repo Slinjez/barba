@@ -5,8 +5,8 @@
     <link rel="stylesheet" type="text/css" href="style.css">
   </head>
   <body>
-    <main data-barba="wrapper">
-      <div data-barba="container" data-barba-namespace="grid">
+    <main id="barba-wrapper">
+      <div class="barba-container" data-namespace="grid">
         <a class="intro-thumb" href="1.html">
           <div class="full" style="background-image: url(images/1.jpg);"></div>
         </a>
@@ -22,9 +22,8 @@
       </div>
     </main>
 
-    <script src="https://unpkg.com/@barba/core"></script>
-    <script src="https://cdn.jsdelivr.net/npm/animejs@3.0.1/lib/anime.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.2/TweenMax.min.js"></script>
+    <script src="../../dist/barba.js"></script>
     <script src="grid.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.18.1/TweenMax.min.js"></script>
   </body>
 </html>

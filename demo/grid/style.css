@@ -28,7 +28,7 @@ a.back {
   left: 10px;
 }
 
-[data-barba='container'] {
+.barba-container {
   display: block;
   position: fixed;
   top: 0;

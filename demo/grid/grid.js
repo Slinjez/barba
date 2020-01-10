@@ -1,52 +1,85 @@
-/* global barba, TweenLite */
-document.addEventListener('DOMContentLoaded', () => {
-  const expandTransition = {
-    from: { namespace: 'grid' },
-    leave({ current, trigger }) {
-      if (typeof trigger === 'string') {
-        return;
-      }
+document.addEventListener("DOMContentLoaded", function() {
+  var lastElementClicked;
+  Barba.Pjax.init();
+  Barba.Prefetch.init();
 
-      const done = this.async();
-      const thumbPosition = trigger.getBoundingClientRect();
-      const cloneThumb = trigger.cloneNode(true);
+  Barba.Dispatcher.on('linkClicked', function(el) {
+    lastElementClicked = el;
+  });
 
-      cloneThumb.style.position = 'absolute';
-      cloneThumb.style.top = `${thumbPosition.top}px`;
+  var ExpandTransition = Barba.BaseTransition.extend({
+    start: function() {
+      this.originalThumb = lastElementClicked;
 
-      current.container.appendChild(cloneThumb);
+      Promise
+        .all([this.newContainerLoading, this.enlargeThumb()])
+        .then(this.showNewPage.bind(this));
+    },
 
-      TweenLite.to(cloneThumb, 0.3, {
+    enlargeThumb: function() {
+      var deferred = Barba.Utils.deferred();
+      var thumbPosition = this.originalThumb.getBoundingClientRect();
+
+      this.cloneThumb = this.originalThumb.cloneNode(true);
+      this.cloneThumb.style.position = 'absolute';
+      this.cloneThumb.style.top = thumbPosition.top + 'px';
+
+      this.oldContainer.appendChild(this.cloneThumb);
+
+      TweenLite.to(this.cloneThumb, 0.3, {
         top: 0,
         height: window.innerHeight,
-        onComplete: done,
+        onComplete: function() {
+          deferred.resolve();
+        }
       });
+
+      return deferred.promise;
     },
-  };
 
-  const shrinkTransition = {
-    from: { namespace: 'detail' },
-    enter({ current, next }) {
-      current.container.style.zIndex = '10';
+    showNewPage: function() {
+      this.newContainer.style.visibility = 'visible';
+      this.done();
+    }
+  });
 
-      const done = this.async();
-      const href = current.url.path.split('/').pop();
-      const destThumb = next.container.querySelector(`a[href="${href}"]`);
-      const destThumbPosition = destThumb.getBoundingClientRect();
-      const fullImage = current.container.querySelector('.full');
 
-      TweenLite.to(current.container.querySelector('.back'), 0.2, {
-        opacity: 0,
-      });
+  var ShrinkTransition = Barba.BaseTransition.extend({
+    start: function() {
+      this.newContainerLoading.then(this.shrinkImage.bind(this));
+    },
+
+    shrinkImage: function() {
+      var _this = this;
+
+      this.oldContainer.style.zIndex = '10';
+      this.newContainer.style.visibility = 'visible';
+
+      var href = Barba.HistoryManager.prevStatus().url.split('/').pop();
+      var destThumb = this.newContainer.querySelector('a[href="' + href + '"]');
+      var destThumbPosition = destThumb.getBoundingClientRect();
+      var fullImage = this.oldContainer.querySelector('.full');
+
+      TweenLite.to(this.oldContainer.querySelector('.back'), 0.2, { opacity: 0 });
+
       TweenLite.to(fullImage, 0.3, {
         top: destThumbPosition.top,
         height: destThumb.clientHeight,
-        onComplete: done,
+        onComplete: function() {
+          _this.done();
+        }
       });
-    },
+    }
+  });
+
+  Barba.Pjax.getTransition = function() {
+    var transitionObj = ExpandTransition;
+
+    if (Barba.HistoryManager.prevStatus().namespace === 'detail') {
+      transitionObj = ShrinkTransition;
+    }
+
+    return transitionObj;
   };
 
-  barba.init({
-    transitions: [expandTransition, shrinkTransition],
-  });
 });
